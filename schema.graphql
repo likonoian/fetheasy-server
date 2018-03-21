@@ -1,0 +1,93 @@
+type User {
+  name: String!
+  email: [String]
+  phone: [String]
+  fbUserId: String
+  tag: String!
+  userPics: [String]
+  shops: [Shop] @relation(name: "OWNS")
+  createdAt: String!
+  updatedAt: String
+  userLocations: [Location] @relation(name: "LOCATED_AT")
+}
+
+type Shop {
+  name: String!
+  email: [String]
+  phone: [String]
+  fbPageId: String
+  tag: String!
+  shopPics: [Strings]
+  users: [User] @relation(name: "OWNS", direction: IN)
+  shopLocations: [Shop] @relation(name: "LOCATED_AT")
+  createdAt: String!
+  updatedAt: String
+}
+
+type Location {
+  latitude: String!
+  longitude: String!
+  locationName: String
+  userLocations: [User] @relation(name: "LOCATED_AT", direction: IN)
+  shopLocations: [Shop] @relation(name: "LOCATED_AT", direction: IN)
+}
+
+type Category {
+  name: String
+}
+
+type Product {
+  name: String!
+  price: String
+  attributes: [String]
+  condition: String
+  brand: String
+}
+
+type Delivery {
+  means: String
+}
+
+type MutationType {
+  addProductToCategory(
+    product: ID!
+    category: ID!
+    subCategory: String!
+  ): String
+    @cypher(
+      statement: "MATCH (p:Product {name:$product}),(c:Category {name:$category}) MERGE (p)-[r:BELONGS_TO_CATEGORY]->(m) SET r.subCategory=$subCategory RETURN r.subCategory"
+    )
+
+  addProductToDelivery(product: ID!, delivery: ID!, deliveryPrice: Int!): Int
+    @cypher(
+      statement: "MATCH (p:Product {name:$product}),(d:Delivery {means:$delivery}) MERGE (p)-[r:HAS_DELIVERY]->(m) SET r.deliveryPrice=$deliveryPrice RETURN r.deliveryPrice"
+    )
+
+  rateProduct(user: ID!, product: ID!, rating: Int!): Int
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(p:Product {name:$product}) MERGE (p)-[r:RATED]->(m) SET r.rating=$rating RETURN r.rating"
+    )
+
+  rateShop(user: ID!, shop: ID!, rating: Int!): Int
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(s:Shop {name:$shop}) MERGE (p)-[r:RATED]->(m) SET r.rating=$rating RETURN r.rating"
+    )
+
+  commentOnProduct(user: ID!, product: ID!, comment: String!): String
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(p:Product {name:$product}) MERGE (p)-[r:COMMENTED_ON]->(m) SET r.comment=$comment RETURN r.comment"
+    )
+
+  commentOnShop(user: ID!, shop: ID!, comment: Int!): String
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(s:Shop {name:$shop}) MERGE (p)-[r:COMMENTED_ON]->(m) SET r.comment=$comment RETURN r.comment"
+    )
+  likeProduct(user: ID!, product: ID!, like: Boolean!): Boolean
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(p:Product {name:$product}) MERGE (p)-[r:LIKE]->(m) SET r.like=$like RETURN r.like"
+    )
+  likeShop(user: ID!, shop: ID!, like: Boolean!): Boolean
+    @cypher(
+      statement: "MATCH (u:User {name:$user}),(s:Shop {name:$shop}) MERGE (p)-[r:LIKE]->(m) SET r.like=$like RETURN r.like"
+    )
+}
